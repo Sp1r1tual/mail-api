@@ -15,3 +15,5 @@ for (const name of ["MAIL_API_SECRET", "ALLOWED_LINK_ORIGINS"]) {
 http.createServer(app).listen(PORT, () => {
   console.log(`Server started on PORT: ${PORT}`);
 });
+
+export default app;
