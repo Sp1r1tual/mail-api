@@ -3,6 +3,19 @@ import { Request, Response, NextFunction } from "express";
 import mailService from "../services/mail-service.js";
 
 import { ApiError } from "../../shared/exceptions/api-error.js";
+import {
+  isAllowedLink,
+  isValidEmail,
+} from "../../shared/validate-mail-request.js";
+
+const parseMailRequest = (req: Request) => {
+  const { email, link } = req.body ?? {};
+
+  if (!isValidEmail(email)) throw ApiError.BadRequest("Invalid email");
+  if (!isAllowedLink(link)) throw ApiError.BadRequest("Invalid link");
+
+  return { email, link };
+};
 
 class MailController {
   sendActivationMail = async (
@@ -11,19 +24,15 @@ class MailController {
     next: NextFunction,
   ) => {
     try {
-      const { email, link } = req.body;
-      if (!email || !link) {
-        throw ApiError.BadRequest("Email and link are required");
-      }
+      const { email, link } = parseMailRequest(req);
 
       await mailService.sendActivationMail(email, link);
       res.status(200).json({ message: "Activation email sent" });
     } catch (error) {
-      if (!(error instanceof ApiError)) {
-        next(ApiError.BadRequest("Failed to send activation email"));
-      } else {
-        next(error);
-      }
+      if (error instanceof ApiError) return next(error);
+
+      console.error("Failed to send activation email:", error);
+      next(ApiError.ServiceUnavailable("Failed to send activation email"));
     }
   };
 
@@ -33,19 +42,15 @@ class MailController {
     next: NextFunction,
   ) => {
     try {
-      const { email, link } = req.body;
-      if (!email || !link) {
-        throw ApiError.BadRequest("Email and reset link are required");
-      }
+      const { email, link } = parseMailRequest(req);
 
       await mailService.sendPasswordResetMail(email, link);
       res.status(200).json({ message: "Reset password email sent" });
     } catch (error) {
-      if (!(error instanceof ApiError)) {
-        next(ApiError.BadRequest("Failed to send password reset email"));
-      } else {
-        next(error);
-      }
+      if (error instanceof ApiError) return next(error);
+
+      console.error("Failed to send password reset email:", error);
+      next(ApiError.ServiceUnavailable("Failed to send password reset email"));
     }
   };
 }
