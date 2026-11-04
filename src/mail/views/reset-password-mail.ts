@@ -1,4 +1,8 @@
+import { escapeHtml } from "../../shared/escape-html.js";
+
 const resetPasswordMailTemplate = (resetLink: string) => {
+  const safeLink = escapeHtml(resetLink);
+
   return `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto">
             <h2 style="color: #333">Password Reset Request</h2>
@@ -8,7 +12,7 @@ const resetPasswordMailTemplate = (resetLink: string) => {
             </p>
             <div style="margin: 20px 0">
                 <a
-                    href="${resetLink}"
+                    href="${safeLink}"
                     style="
                     background-color: #007bff;
                     color: white;
@@ -31,7 +35,7 @@ const resetPasswordMailTemplate = (resetLink: string) => {
             <p style="color: #999; font-size: 12px">
                 If the button doesn't work, copy and paste this link into your
                 browser:<br />
-                <a href="${resetLink}">${resetLink}</a>
+                <a href="${safeLink}">${safeLink}</a>
             </p>
         </div>
     `;
